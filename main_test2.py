@@ -13,11 +13,11 @@ with open(file_name, 'rb') as fo:
     mean_for_MAD = pickle.load(fo)
 print('max_price', max(mean_for_MAD))
 
-file_name = './1EVCS_test_1/my_list_8_test5_save.pkl'
+file_name = './1EVCS_test_1/my_list_8_test3_save.pkl'
 with open(file_name, 'rb') as fo:
     my_list_last = pickle.load(fo)
 
-file_name = './1EVCS_test_1/n_car_number_2evcs_test5_save.pkl'
+file_name = './1EVCS_test_1/n_car_number_2evcs_test3_save.pkl'
 with open(file_name, 'rb') as fo:
     car_already_in = pickle.load(fo)
 
@@ -97,8 +97,8 @@ evcssp_model = gp.Model("evcssp")
 
 day_time = [i for i in range(96)]  # t
 car_number = [i for i in range(car_max)]  # m
-evcs_list = [1]
-evcs_max_number_list = [num_temp + 0 for num_temp in evcs_list]
+evcs_list = [10]
+evcs_max_number_list = [num_temp + 1 for num_temp in evcs_list]
 evcs_number = [i for i in range(len(evcs_list))]  # p
 evcs_station = [[k for k in range(i)] for i in evcs_max_number_list]  # k
 
@@ -539,6 +539,7 @@ if solve:
     # 16 end
     print('16 end')
     #################################################################################################################
+
     ####################################################################################################################################################################################################################################
 
     # Set objective

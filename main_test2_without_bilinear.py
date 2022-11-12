@@ -5,7 +5,7 @@ import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
 
-use_bilinear = False
+use_bilinear = True
 solve = True
 time1 = time_count.time()
 
@@ -16,11 +16,11 @@ with open(file_name, 'rb') as fo:
     mean_for_MAD = pickle.load(fo)
 print('max_price', max(mean_for_MAD))
 
-file_name = './1EVCS_test_1/my_list_8_test5_save.pkl'
+file_name = './1EVCS_test_1/my_list_8_test3_save.pkl'
 with open(file_name, 'rb') as fo:
     my_list_last = pickle.load(fo)
 
-file_name = './1EVCS_test_1/n_car_number_2evcs_test5_save.pkl'
+file_name = './1EVCS_test_1/n_car_number_2evcs_test3_save.pkl'
 with open(file_name, 'rb') as fo:
     car_already_in = pickle.load(fo)
 
@@ -97,10 +97,11 @@ def my_multiply(list1, list2, index):
 
 # Create a new model
 evcssp_model = gp.Model("evcssp")
+evcssp_model.params.NonConvex = 2
 
 day_time = [i for i in range(96)]  # t
 car_number = [i for i in range(car_max)]  # m
-evcs_list = [1]
+evcs_list = [10]
 evcs_max_number_list = [num_temp + 0 for num_temp in evcs_list]
 evcs_number = [i for i in range(len(evcs_list))]  # p
 evcs_station = [[k for k in range(i)] for i in evcs_max_number_list]  # k
@@ -162,84 +163,88 @@ else:
 if solve:
     ####################################################################################################################################################################################################################################
     #################################################################################################################
-    if use_bilinear:
-        # 2 start
-        # Add constraints: E_t=\sum (soc_{t} -soc_{t-1})z_{t-1}
-        #     energy_consumption_p0 = {}
-        #     for t in time:
-        #         if t >= 1:
-        #             energy_consumption_p0[t] = evcssp_model.addConstr(
-        #                 energy[t] == gp.quicksum(
-        #                     e_for_E[t, m, p, k] - f_for_E[t, m, p, k] for tt, m, p, k in my_index if (tt == t)),
-        #                 name='energy_consumption_p0' + str(t))
-        #
-        #     energy_consumption_p1_1 = {}
-        #     for t, m, p, k in my_index:
-        #         if t >= 1:
-        #             energy_consumption_p1_1[t, m, p, k] = evcssp_model.addConstr(
-        #                 e_for_E[t, m, p, k] <= overline_SOC * z[(t - 1), m, p, k],
-        #                 name='energy_consumption_p1_1' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #
-        #     energy_consumption_p1_2 = {}
-        #     for t, m, p, k in my_index:
-        #         energy_consumption_p1_2[t, m, p, k] = evcssp_model.addConstr(
-        #             e_for_E[t, m, p, k] <= soc[t, m],
-        #             name='energy_consumption_p_1_2' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #
-        #     energy_consumption_p1_3 = {}
-        #     for t, m, p, k in my_index:
-        #         if t >= 1:
-        #             energy_consumption_p1_3[t, m, p, k] = evcssp_model.addConstr(
-        #                 e_for_E[t, m, p, k] >= soc[t, m] - overline_SOC * (1 - z[(t - 1), m, p, k]),
-        #                 name='energy_consumption_p1_3' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #
-        #     energy_consumption_p1_4 = {}
-        #     for t, m, p, k in my_index:
-        #         energy_consumption_p1_4[t, m, p, k] = evcssp_model.addConstr(
-        #             e_for_E[t, m, p, k] >= 0,
-        #             name='energy_consumption_p_1_4' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #
-        #     ###
-        #     energy_consumption_p2_1 = {}
-        #     for t, m, p, k in my_index:
-        #         if t >= 1:
-        #             energy_consumption_p2_1[t, m, p, k] = evcssp_model.addConstr(
-        #                 f_for_E[t, m, p, k] <= overline_SOC * z[(t - 1), m, p, k],
-        #                 name='energy_consumption_p2_1' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #
-        #     energy_consumption_p2_2 = {}
-        #     for t, m, p, k in my_index:
-        #         if t >= 1:
-        #             energy_consumption_p2_2[t, m, p, k] = evcssp_model.addConstr(
-        #                 f_for_E[t, m, p, k] <= soc[(t - 1), m],
-        #                 name='energy_consumption_p_2_2' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #
-        #     energy_consumption_p2_3 = {}
-        #     for t, m, p, k in my_index:
-        #         if t >= 1:
-        #             energy_consumption_p2_3[t, m, p, k] = evcssp_model.addConstr(
-        #                 f_for_E[t, m, p, k] >= soc[(t - 1), m] - overline_SOC * (1 - z[(t - 1), m, p, k]),
-        #                 name='energy_consumption_p2_3' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #
-        #     energy_consumption_p2_4 = {}
-        #     for t, m, p, k in my_index:
-        #         energy_consumption_p2_4[t, m, p, k] = evcssp_model.addConstr(
-        #             f_for_E[t, m, p, k] >= 0,
-        #             name='energy_consumption_p_2_4' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
-        #     # 2 end
-        #     print('2 end')
-        # else:
-        # 2 start
-        # Add constraints: E_t=\sum (soc_{t} -soc_{t-1})z_{t-1}
-        energy_consumption = {}
-        for t in time:
-            if t >= 1:
-                energy_consumption[t] = evcssp_model.addConstr(
-                    energy[t] == gp.quicksum(
-                        (soc[t, m] - soc[(t - 1), m]) * z[t, m, p, k] for tt, m, p, k in my_index if (tt == t)),
-                    name='energy_consumption' + str(t))
-        # 2 end
-        print('2 end')
+    # if use_bilinear:
+    #     pass
+    #     # 2 start
+    #     # Add constraints: E_t=\sum (soc_{t} -soc_{t-1})z_{t-1}
+    #     #     energy_consumption_p0 = {}
+    #     #     for t in time:
+    #     #         if t >= 1:
+    #     #             energy_consumption_p0[t] = evcssp_model.addConstr(
+    #     #                 energy[t] == gp.quicksum(
+    #     #                     e_for_E[t, m, p, k] - f_for_E[t, m, p, k] for tt, m, p, k in my_index if (tt == t)),
+    #     #                 name='energy_consumption_p0' + str(t))
+    #     #
+    #     #     energy_consumption_p1_1 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         if t >= 1:
+    #     #             energy_consumption_p1_1[t, m, p, k] = evcssp_model.addConstr(
+    #     #                 e_for_E[t, m, p, k] <= overline_SOC * z[(t - 1), m, p, k],
+    #     #                 name='energy_consumption_p1_1' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #
+    #     #     energy_consumption_p1_2 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         energy_consumption_p1_2[t, m, p, k] = evcssp_model.addConstr(
+    #     #             e_for_E[t, m, p, k] <= soc[t, m],
+    #     #             name='energy_consumption_p_1_2' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #
+    #     #     energy_consumption_p1_3 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         if t >= 1:
+    #     #             energy_consumption_p1_3[t, m, p, k] = evcssp_model.addConstr(
+    #     #                 e_for_E[t, m, p, k] >= soc[t, m] - overline_SOC * (1 - z[(t - 1), m, p, k]),
+    #     #                 name='energy_consumption_p1_3' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #
+    #     #     energy_consumption_p1_4 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         energy_consumption_p1_4[t, m, p, k] = evcssp_model.addConstr(
+    #     #             e_for_E[t, m, p, k] >= 0,
+    #     #             name='energy_consumption_p_1_4' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #
+    #     #     ###
+    #     #     energy_consumption_p2_1 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         if t >= 1:
+    #     #             energy_consumption_p2_1[t, m, p, k] = evcssp_model.addConstr(
+    #     #                 f_for_E[t, m, p, k] <= overline_SOC * z[(t - 1), m, p, k],
+    #     #                 name='energy_consumption_p2_1' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #
+    #     #     energy_consumption_p2_2 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         if t >= 1:
+    #     #             energy_consumption_p2_2[t, m, p, k] = evcssp_model.addConstr(
+    #     #                 f_for_E[t, m, p, k] <= soc[(t - 1), m],
+    #     #                 name='energy_consumption_p_2_2' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #
+    #     #     energy_consumption_p2_3 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         if t >= 1:
+    #     #             energy_consumption_p2_3[t, m, p, k] = evcssp_model.addConstr(
+    #     #                 f_for_E[t, m, p, k] >= soc[(t - 1), m] - overline_SOC * (1 - z[(t - 1), m, p, k]),
+    #     #                 name='energy_consumption_p2_3' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #
+    #     #     energy_consumption_p2_4 = {}
+    #     #     for t, m, p, k in my_index:
+    #     #         energy_consumption_p2_4[t, m, p, k] = evcssp_model.addConstr(
+    #     #             f_for_E[t, m, p, k] >= 0,
+    #     #             name='energy_consumption_p_2_4' + str(t) + ',' + str(m) + ',' + str(p) + ',' + str(k))
+    #     #     # 2 end
+    #     #     print('2 end')
+    # else:
+
+
+
+    # 2 start
+    # Add constraints: E_t=\sum (soc_{t} -soc_{t-1})z_{t-1}
+    energy_consumption = {}
+    for t in time:
+        if t >= 1:
+            energy_consumption[t] = evcssp_model.addConstr(
+                energy[t] == gp.quicksum(
+                    (soc[t, m] - soc[(t - 1), m]) * z[t, m, p, k] for tt, m, p, k in my_index if (tt == t)),
+                name='energy_consumption' + str(t))
+    # 2 end
+    print('2 end')
     #################################################################################################################
 
     #################################################################################################################
@@ -360,112 +365,114 @@ if solve:
     #################################################################################################################
 
     #################################################################################################################
+    # if use_bilinear:
+    #     # 8 start
+    #     # Add constraints:  0<= sum sum z P(T(soc)) <=P_overline
+    #     overline_POWER = 1000
+    #     delta_t = 1
+    #     transformer_limit = {}
+    #     for t, m in my_car_index:
+    #         transformer_limit[t, m] = evcssp_model.addGenConstrPWL(soc[t, m], limit_temp[t, m],
+    #                                                                [-0.9, 0, 39.173, 73.862, 83.432, 90.599, 95.990,
+    #                                                                 100, 101],
+    #                                                                [0 / delta_t, 0 / delta_t, 5 / delta_t,
+    #                                                                 9.32 / delta_t,
+    #                                                                 10.66 / delta_t, 12 / delta_t, 13.34 / delta_t,
+    #                                                                 14.68 / delta_t, 14.68 / delta_t],
+    #                                                                name='transformer_limit' + str(
+    #                                                                    t) + '+' + str(m))
+    #
+    #     transformer_restrict_1 = {}
+    #     for t, m in my_car_index:
+    #         transformer_restrict_1[t, m] = evcssp_model.addGenConstrPWL(limit_temp[t, m], p_for_restrict[t, m],
+    #                                                                     [-0.9 / delta_t, 0 / delta_t, 0 / delta_t,
+    #                                                                      5 / delta_t, 9.32 / delta_t, 10.66 / delta_t,
+    #                                                                      12 / delta_t, 13.34 / delta_t, 14.68 / delta_t,
+    #                                                                      14.68 / delta_t,
+    #                                                                      15 / delta_t],
+    #                                                                     [0, 0, 6, 6.105, 6.333, 4.739, 3.596, 2.675,
+    #                                                                      1.968,
+    #                                                                      0,
+    #                                                                      0],
+    #                                                                     name='transformer_restrict_1' + str(
+    #                                                                         t) + '+' + str(m))
+    #
+    #     transformer_restrict_2 = {}
+    #     for t, m, p, k in my_index:
+    #         transformer_restrict_2[t, m, p, k] = evcssp_model.addConstr(
+    #             w_for_restrict[t, m, p, k] <= overline_POWER * z[t, m, p, k],
+    #             name='transformer_restrict_2' + str(t) + '+' + str(m))
+    #
+    #     transformer_restrict_3 = {}
+    #     for t, m, p, k in my_index:
+    #         transformer_restrict_3[t, m, p, k] = evcssp_model.addConstr(
+    #             w_for_restrict[t, m, p, k] <= p_for_restrict[t, m],
+    #             name='transformer_restrict_3' + str(t) + '+' + str(m))
+    #
+    #     transformer_restrict_4 = {}
+    #     for t, m, p, k in my_index:
+    #         transformer_restrict_4[t, m, p, k] = evcssp_model.addConstr(
+    #             w_for_restrict[t, m, p, k] >= p_for_restrict[t, m] - overline_POWER * (1 - z[t, m, p, k]),
+    #             name='transformer_restrict_4' + str(t) + '+' + str(m))
+    #
+    #     transformer_restrict_5 = {}
+    #     for t, m, p, k in my_index:
+    #         transformer_restrict_5[t, m, p, k] = evcssp_model.addConstr(
+    #             w_for_restrict[t, m, p, k] >= 0,
+    #             name='transformer_restrict_5' + str(t) + '+' + str(m))
+    #
+    #     transformer_restrict_6 = {}
+    #     for t in time:
+    #         for p in evcs_number:
+    #             transformer_restrict_6[t, p] = evcssp_model.addConstr(
+    #                 gp.quicksum(w_for_restrict[t, m, p, k] for tt, m, pp, k in my_index if
+    #                             (tt == t and pp == p)) <= transformer_list[p],
+    #                 name='transformer_restrict_6' + ',' + str(t) + ',' + str(p))
+    #     # 8 end
+    #     print('8 end')
+    # else:
 
-    if use_bilinear:
-        # 8 start
-        # Add constraints:  0<= sum sum z P(T(soc)) <=P_overline
-        overline_POWER = 1000
-        delta_t = 1
-        transformer_limit = {}
-        for t, m in my_car_index:
-            transformer_limit[t, m] = evcssp_model.addGenConstrPWL(soc[t, m], limit_temp[t, m],
-                                                                   [-0.9, 0, 39.173, 73.862, 83.432, 90.599, 95.990,
-                                                                    100, 101],
-                                                                   [0 / delta_t, 0 / delta_t, 5 / delta_t,
-                                                                    9.32 / delta_t,
-                                                                    10.66 / delta_t, 12 / delta_t, 13.34 / delta_t,
-                                                                    14.68 / delta_t, 14.68 / delta_t],
-                                                                   name='transformer_limit' + str(
-                                                                       t) + '+' + str(m))
 
-        transformer_restrict_1 = {}
-        for t, m in my_car_index:
-            transformer_restrict_1[t, m] = evcssp_model.addGenConstrPWL(limit_temp[t, m], p_for_restrict[t, m],
-                                                                        [-0.9 / delta_t, 0 / delta_t, 0 / delta_t,
-                                                                         5 / delta_t, 9.32 / delta_t, 10.66 / delta_t,
-                                                                         12 / delta_t, 13.34 / delta_t, 14.68 / delta_t,
-                                                                         14.68 / delta_t,
-                                                                         15 / delta_t],
-                                                                        [0, 0, 6, 6.105, 6.333, 4.739, 3.596, 2.675,
-                                                                         1.968,
-                                                                         0,
-                                                                         0],
-                                                                        name='transformer_restrict_1' + str(
-                                                                            t) + '+' + str(m))
 
-        transformer_restrict_2 = {}
-        for t, m, p, k in my_index:
-            transformer_restrict_2[t, m, p, k] = evcssp_model.addConstr(
-                w_for_restrict[t, m, p, k] <= overline_POWER * z[t, m, p, k],
-                name='transformer_restrict_2' + str(t) + '+' + str(m))
+    # 8 start
+    # Add constraints:  0<= sum sum z P(T(soc)) <=P_overline
+    transformer_limit_1 = {}
+    for t in time:
+        for p in evcs_number:
+            transformer_limit_1[t, p] = evcssp_model.addConstr(
+                gp.quicksum((z[t, m, p, k] * limit_temp_square[t, m]) for tt, m, pp, k in my_index if
+                            (tt == t and pp == p)) <= transformer_list[p],
+                name='transformer_limit_1' + ',' + str(t) + ',' + str(p))
 
-        transformer_restrict_3 = {}
-        for t, m, p, k in my_index:
-            transformer_restrict_3[t, m, p, k] = evcssp_model.addConstr(
-                w_for_restrict[t, m, p, k] <= p_for_restrict[t, m],
-                name='transformer_restrict_3' + str(t) + '+' + str(m))
+    transformer_limit_1_1 = {}
+    for t in time:
+        for p in evcs_number:
+            transformer_limit_1_1[t, p] = evcssp_model.addConstr(
+                0 <= gp.quicksum((z[t, m, p, k] * limit_temp_square[t, m]) for tt, m, pp, k in my_index if
+                                 (tt == t and pp == p)),
+                name='transformer_limit_1_1' + ',' + str(t) + ',' + str(p))
 
-        transformer_restrict_4 = {}
-        for t, m, p, k in my_index:
-            transformer_restrict_4[t, m, p, k] = evcssp_model.addConstr(
-                w_for_restrict[t, m, p, k] >= p_for_restrict[t, m] - overline_POWER * (1 - z[t, m, p, k]),
-                name='transformer_restrict_4' + str(t) + '+' + str(m))
+    transformer_limit_2 = {}
+    for t, m in my_car_index:
+        transformer_limit_2[t, m] = evcssp_model.addGenConstrPWL(limit_temp_star[t, m], limit_temp_square[t, m],
+                                                                 [-0.9, 0, 0, 5, 9.32, 10.66, 12, 13.34, 14.68,
+                                                                  14.68,
+                                                                  15],
+                                                                 [0, 0, 6, 6.105, 6.333, 4.739, 3.596, 2.675, 1.968,
+                                                                  0,
+                                                                  0],
+                                                                 name='transformer_limit_2' + str(
+                                                                     t) + '+' + str(m))
 
-        transformer_restrict_5 = {}
-        for t, m, p, k in my_index:
-            transformer_restrict_5[t, m, p, k] = evcssp_model.addConstr(
-                w_for_restrict[t, m, p, k] >= 0,
-                name='transformer_restrict_5' + str(t) + '+' + str(m))
-
-        transformer_restrict_6 = {}
-        for t in time:
-            for p in evcs_number:
-                transformer_restrict_6[t, p] = evcssp_model.addConstr(
-                    gp.quicksum(w_for_restrict[t, m, p, k] for tt, m, pp, k in my_index if
-                                (tt == t and pp == p)) <= transformer_list[p],
-                    name='transformer_restrict_6' + ',' + str(t) + ',' + str(p))
-        # 8 end
-        print('8 end')
-    else:
-        # 8 start
-        # Add constraints:  0<= sum sum z P(T(soc)) <=P_overline
-        transformer_limit_1 = {}
-        for t in time:
-            for p in evcs_number:
-                transformer_limit_1[t, p] = evcssp_model.addConstr(
-                    gp.quicksum((z[t, m, p, k] * limit_temp_square[t, m]) for tt, m, pp, k in my_index if
-                                (tt == t and pp == p)) <= transformer_list[p],
-                    name='transformer_limit_1' + ',' + str(t) + ',' + str(p))
-
-        transformer_limit_1_1 = {}
-        for t in time:
-            for p in evcs_number:
-                transformer_limit_1_1[t, p] = evcssp_model.addConstr(
-                    0 <= gp.quicksum((z[t, m, p, k] * limit_temp_square[t, m]) for tt, m, pp, k in my_index if
-                                     (tt == t and pp == p)),
-                    name='transformer_limit_1_1' + ',' + str(t) + ',' + str(p))
-
-        transformer_limit_2 = {}
-        for t, m in my_car_index:
-            transformer_limit_2[t, m] = evcssp_model.addGenConstrPWL(limit_temp_star[t, m], limit_temp_square[t, m],
-                                                                     [-0.9, 0, 0, 5, 9.32, 10.66, 12, 13.34, 14.68,
-                                                                      14.68,
-                                                                      15],
-                                                                     [0, 0, 6, 6.105, 6.333, 4.739, 3.596, 2.675, 1.968,
-                                                                      0,
-                                                                      0],
-                                                                     name='transformer_limit_2' + str(
-                                                                         t) + '+' + str(m))
-
-        transformer_limit_3 = {}
-        for t, m in my_car_index:
-            transformer_limit_3[t, m] = evcssp_model.addGenConstrPWL(soc[t, m], limit_temp_star[t, m],
-                                                                     [-0.9, 0, 39.173, 73.862, 83.432, 90.599, 95.990,
-                                                                      100, 101],
-                                                                     [0, 0, 5, 9.32, 10.66, 12, 13.34, 14.68, 14.68],
-                                                                     name='transformer_limit_3' + str(
-                                                                         t) + '+' + str(m))
-        print('8 end')
+    transformer_limit_3 = {}
+    for t, m in my_car_index:
+        transformer_limit_3[t, m] = evcssp_model.addGenConstrPWL(soc[t, m], limit_temp_star[t, m],
+                                                                 [-0.9, 0, 39.173, 73.862, 83.432, 90.599, 95.990,
+                                                                  100, 101],
+                                                                 [0, 0, 5, 9.32, 10.66, 12, 13.34, 14.68, 14.68],
+                                                                 name='transformer_limit_3' + str(
+                                                                     t) + '+' + str(m))
+    print('8 end')
     #################################################################################################################
 
     # #################################################################################################################

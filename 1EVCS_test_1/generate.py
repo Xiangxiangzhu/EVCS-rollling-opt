@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 
 TEST = 96
-prop = 5
+prop = 3
 
 file_dir = 'data/'
 file_name = file_dir + 'car_flow_in_2evcs_save.pkl'
@@ -22,7 +22,7 @@ else:
 print('sum', sum(car_flow_in))
 print('test_sum', sum(test_car_flow_in))
 test_car_flow_in = [int(t / prop) for t in test_car_flow_in]
-test_car_flow_in[0] = 1
+# test_car_flow_in[0] = 1
 
 print('test_sum', sum(test_car_flow_in))
 
